@@ -1,12 +1,19 @@
 
-import { OllamaModel } from './types';
+import { OllamaModel } from './types.ts';
 
-// Check for environment variables (supports standard and Next.js style prefixes used in your Docker config)
-const ENV_URL = typeof process !== 'undefined' 
-  ? (process.env.NEXT_PUBLIC_OLLAMA_URL || process.env.OLLAMA_URL) 
-  : null;
+// Detect environment URL, with fallbacks for standard and browser-injected scenarios
+const getOllamaUrl = () => {
+  if (typeof window !== 'undefined' && (window as any).ENV_OLLAMA_URL) {
+    return (window as any).ENV_OLLAMA_URL;
+  }
+  
+  const processEnv = (typeof process !== 'undefined' ? process.env : {}) as Record<string, string>;
+  const envUrl = processEnv.NEXT_PUBLIC_OLLAMA_URL || processEnv.OLLAMA_URL;
+  
+  return envUrl || 'http://localhost:11434';
+};
 
-export const OLLAMA_BASE_URL = ENV_URL || 'http://localhost:11434';
+export const OLLAMA_BASE_URL = getOllamaUrl();
 
 export const OLLAMA_MODELS: OllamaModel[] = [
   { name: 'Llama 3 (Balanced)', value: 'llama3' },

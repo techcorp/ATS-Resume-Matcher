@@ -5,14 +5,17 @@ import {
   AnalysisResult, 
   JobData, 
   OptimizedResume 
-} from './types';
-import { OllamaService } from './services/ollamaService';
-import { OLLAMA_MODELS } from './constants';
-import AdSequence from './components/AdSequence';
+} from './types.ts';
+import { OllamaService } from './services/ollamaService.ts';
+import { OLLAMA_MODELS } from './constants.ts';
+import AdSequence from './components/AdSequence.tsx';
 
-if (typeof window !== 'undefined' && (window as any).pdfjsLib) {
-  (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
+// Safety check for pdfjsLib in browser
+const initPdfWorker = () => {
+  if (typeof window !== 'undefined' && (window as any).pdfjsLib) {
+    (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+};
 
 const Header = () => (
   <header className="fixed top-0 left-0 right-0 z-50 p-6">
@@ -53,8 +56,14 @@ const App: React.FC = () => {
   const [progressMessage, setProgressMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [showExportConfirm, setShowExportConfirm] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [showExportConfirm, setShowExportConfirm] = useState(false);
+
+  useEffect(() => {
+    initPdfWorker();
+    const timer = setTimeout(() => setIsSplashComplete(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let interval: number;
@@ -66,16 +75,16 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [isProcessing, step, isUploading]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsSplashComplete(true), 1200);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.type !== 'application/pdf') { setError('Invalid format. Please upload a PDF.'); return; }
     
+    if (!(window as any).pdfjsLib) {
+      setError('PDF Engine not ready. Please refresh the page.');
+      return;
+    }
+
     try {
       setError(null); setIsUploading(true); setProgress(10); setProgressMessage('Parsing Document...');
       const arrayBuffer = await file.arrayBuffer();
@@ -84,7 +93,7 @@ const App: React.FC = () => {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        text += content.items.map((item: any) => item.str).join(' ') + '\n';
+        text += content.items.map((item: any) => (item as any).str).join(' ') + '\n';
         setProgress(Math.floor(20 + (i / pdf.numPages) * 75));
       }
       setResumeText(text); setProgress(100);
@@ -156,7 +165,8 @@ const App: React.FC = () => {
         {error && (
           <div className="mb-10 p-6 glass-card border-red-500/20 rounded-3xl text-red-400 text-sm font-bold flex items-center gap-4 animate-in slide-in-from-top-4">
             <div className="w-10 h-10 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 text-xl">!</div>
-            {error}
+            <div className="flex-grow">{error}</div>
+            <button onClick={() => setError(null)} className="text-white opacity-50 hover:opacity-100">×</button>
           </div>
         )}
 
@@ -209,7 +219,8 @@ const App: React.FC = () => {
                         <div className="w-24 h-24 bg-indigo-600/10 text-indigo-500 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl">
                           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                         </div>
-                        <p className="text-3xl font-black text-white tracking-tighter">Import PDF</p>
+                        <p className="text-3xl font-black text-white tracking-tighter">{resumeText ? 'PDF Loaded' : 'Import PDF'}</p>
+                        {resumeText && <p className="text-[10px] text-indigo-400 mt-2 font-black uppercase tracking-widest">Click to Replace</p>}
                       </>
                     )}
                   </label>

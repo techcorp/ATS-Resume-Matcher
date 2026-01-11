@@ -1,6 +1,6 @@
 
-import { OLLAMA_BASE_URL, ANALYSIS_PROMPT, OPTIMIZATION_PROMPT } from '../constants';
-import { AnalysisResult, OptimizedResume } from '../types';
+import { OLLAMA_BASE_URL, ANALYSIS_PROMPT, OPTIMIZATION_PROMPT } from '../constants.ts';
+import { AnalysisResult, OptimizedResume } from '../types.ts';
 
 export class OllamaService {
   private static async callOllama(model: string, prompt: string): Promise<any> {
@@ -22,7 +22,14 @@ export class OllamaService {
       }
 
       const data = await response.json();
-      return JSON.parse(data.response);
+      
+      // Safety check for parsing the model's response which might be wrapped in extra strings
+      try {
+        return typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+      } catch (parseError) {
+        console.error("Failed to parse JSON from model response:", data.response);
+        throw new Error("Local model returned malformed data. Try a different model or prompt.");
+      }
     } catch (error: any) {
       if (error.message.includes('Failed to fetch')) {
         throw new Error("Ollama connection refused. Ensure Ollama is running and OLLAMA_ORIGINS='*' is configured.");
