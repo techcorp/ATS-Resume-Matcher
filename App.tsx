@@ -10,7 +10,8 @@ import { OllamaService } from './services/ollamaService.ts';
 import { OLLAMA_MODELS } from './constants.ts';
 import AdSequence from './components/AdSequence.tsx';
 
-// Safety check for pdfjsLib in browser
+console.log("ATS Pro: App component module loaded.");
+
 const initPdfWorker = () => {
   if (typeof window !== 'undefined' && (window as any).pdfjsLib) {
     (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -60,8 +61,12 @@ const App: React.FC = () => {
   const [showExportConfirm, setShowExportConfirm] = useState(false);
 
   useEffect(() => {
+    console.log("ATS Pro: Main component mounted.");
     initPdfWorker();
-    const timer = setTimeout(() => setIsSplashComplete(true), 1200);
+    const timer = setTimeout(() => {
+        console.log("ATS Pro: Splash screen sequence finished.");
+        setIsSplashComplete(true);
+    }, 1200);
     return () => clearTimeout(timer);
   }, []);
 

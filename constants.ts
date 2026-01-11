@@ -2,17 +2,16 @@
 import { OllamaModel } from './types.ts';
 
 const getOllamaUrl = () => {
-  // Check if we are in a browser environment
   if (typeof window !== 'undefined') {
-    // 1. Check for manual injection (useful for Docker runtime replacement)
+    // 1. Check for Docker runtime injection
     if ((window as any).ENV_OLLAMA_URL && (window as any).ENV_OLLAMA_URL !== "OLLAMA_URL_PLACEHOLDER") {
       return (window as any).ENV_OLLAMA_URL;
     }
     
-    // 2. Check for process.env (handled by bundlers like esbuild/vite)
+    // 2. Check for process.env (esbuild --define)
     try {
       // @ts-ignore
-      const url = process.env.NEXT_PUBLIC_OLLAMA_URL;
+      const url = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_OLLAMA_URL : null;
       if (url && url !== "OLLAMA_URL_PLACEHOLDER") return url;
     } catch(e) {}
   }
@@ -57,7 +56,6 @@ Output ONLY a strictly valid JSON object.
 
 RESUME:
 ${resume}
-
 JOB DESCRIPTION:
 ${jd}
 

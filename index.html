@@ -8,102 +8,61 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --brand-primary: #6366f1;
-            --brand-secondary: #4f46e5;
-            --bg-deep: #030712;
-        }
+        :root { --bg-deep: #030712; }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            letter-spacing: -0.015em;
             background-color: var(--bg-deep);
             color: #f1f5f9;
+            margin: 0;
         }
         .bg-mesh {
-            background: 
-                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(79, 70, 229, 0.1) 0%, transparent 40%),
-                var(--bg-deep);
-            background-attachment: fixed;
+            background: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 40%), var(--bg-deep);
+            min-height: 100vh;
         }
-        .bg-mesh::after {
-            content: "";
+        #root:empty::before {
+            content: "Initializing ATS Engine...";
             position: fixed;
             inset: 0;
-            background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-            opacity: 0.2;
-            pointer-events: none;
-            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: #4f46e5;
+            animation: pulse 2s infinite;
         }
-        .glass-card {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-        .glass-input {
-            background: rgba(2, 6, 23, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-input:focus {
-            background: rgba(2, 6, 23, 0.9);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), inset 0 2px 4px rgba(0,0,0,0.4);
-            outline: none;
-        }
-        .btn-premium {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
-        }
-        .btn-premium:hover {
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.6);
-        }
-        .score-glow {
-            filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-            animation: float 8s ease-in-out infinite;
-            animation-delay: 2s;
-        }
-        
-        .hero-gradient-text {
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
-<script type="importmap">
+    <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "@google/genai": "https://esm.sh/@google/genai@1.35.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
 </head>
-<body class="bg-mesh min-h-screen">
+<body class="bg-mesh">
     <div id="root"></div>
+    
+    <!-- Error tracking script -->
+    <script>
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT') {
+                console.error('Failed to load script:', e.target.src);
+                const root = document.getElementById('root');
+                if (root) root.innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-weight: bold;">[CORE ERROR] Failed to load application modules. Please check your internet connection or CDN availability.</div>';
+            }
+        }, true);
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- CRITICAL: Point to index.js which is produced by the Docker build stage -->
     <script type="module" src="index.js"></script>
 </body>
 </html>
