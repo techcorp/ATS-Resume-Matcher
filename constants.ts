@@ -1,16 +1,23 @@
 
 import { OllamaModel } from './types.ts';
 
-// Detect environment URL, with fallbacks for standard and browser-injected scenarios
 const getOllamaUrl = () => {
-  if (typeof window !== 'undefined' && (window as any).ENV_OLLAMA_URL) {
-    return (window as any).ENV_OLLAMA_URL;
+  // Check if we are in a browser environment
+  if (typeof window !== 'undefined') {
+    // 1. Check for manual injection (useful for Docker runtime replacement)
+    if ((window as any).ENV_OLLAMA_URL && (window as any).ENV_OLLAMA_URL !== "OLLAMA_URL_PLACEHOLDER") {
+      return (window as any).ENV_OLLAMA_URL;
+    }
+    
+    // 2. Check for process.env (handled by bundlers like esbuild/vite)
+    try {
+      // @ts-ignore
+      const url = process.env.NEXT_PUBLIC_OLLAMA_URL;
+      if (url && url !== "OLLAMA_URL_PLACEHOLDER") return url;
+    } catch(e) {}
   }
   
-  const processEnv = (typeof process !== 'undefined' ? process.env : {}) as Record<string, string>;
-  const envUrl = processEnv.NEXT_PUBLIC_OLLAMA_URL || processEnv.OLLAMA_URL;
-  
-  return envUrl || 'http://localhost:11434';
+  return 'http://localhost:11434';
 };
 
 export const OLLAMA_BASE_URL = getOllamaUrl();
