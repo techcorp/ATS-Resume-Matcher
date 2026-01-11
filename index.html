@@ -55,6 +55,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .score-glow {
+            filter: drop-shadow(0 0 8px currentColor);
+        }
     </style>
     <script type="importmap">
 {
@@ -71,20 +74,6 @@
 </head>
 <body class="bg-mesh">
     <div id="root"></div>
-    
-    <!-- Error tracking script -->
-    <script>
-        window.addEventListener('error', function(e) {
-            if (e.target.tagName === 'SCRIPT') {
-                console.error('Failed to load script:', e.target.src);
-                const root = document.getElementById('root');
-                if (root && root.innerHTML === "") {
-                    root.innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-weight: bold; background: #030712; height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;"><div>[CORE ERROR] Failed to load application modules.</div><div style="font-size: 12px; opacity: 0.7; font-weight: normal;">Please check your connection or script path. Path: ' + e.target.src + '</div></div>';
-                }
-            }
-        }, true);
-    </script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script type="module" src="index.tsx"></script>
 </body>

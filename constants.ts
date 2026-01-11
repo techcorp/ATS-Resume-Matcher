@@ -3,17 +3,20 @@ import { OllamaModel } from './types.ts';
 
 const getOllamaUrl = () => {
   if (typeof window !== 'undefined') {
-    // 1. Check for Docker runtime injection
+    // 1. Check for Docker/Window runtime injection
     if ((window as any).ENV_OLLAMA_URL && (window as any).ENV_OLLAMA_URL !== "OLLAMA_URL_PLACEHOLDER") {
       return (window as any).ENV_OLLAMA_URL;
     }
     
-    // 2. Check for process.env (esbuild --define)
+    // 2. Safe check for process.env (prevents crash if process is undefined)
     try {
-      // @ts-ignore
-      const url = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_OLLAMA_URL : null;
-      if (url && url !== "OLLAMA_URL_PLACEHOLDER") return url;
-    } catch(e) {}
+      const globalProcess = (window as any).process;
+      if (globalProcess && globalProcess.env && globalProcess.env.NEXT_PUBLIC_OLLAMA_URL) {
+        return globalProcess.env.NEXT_PUBLIC_OLLAMA_URL;
+      }
+    } catch(e) {
+      console.warn("ATS Pro: Could not read process.env safely.");
+    }
   }
   
   return 'http://localhost:11434';

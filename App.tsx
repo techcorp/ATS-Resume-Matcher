@@ -64,7 +64,6 @@ const App: React.FC = () => {
     console.log("ATS Pro: Main component mounted.");
     initPdfWorker();
     const timer = setTimeout(() => {
-        console.log("ATS Pro: Splash screen sequence finished.");
         setIsSplashComplete(true);
     }, 1200);
     return () => clearTimeout(timer);
@@ -75,12 +74,12 @@ const App: React.FC = () => {
     if (isProcessing && (step === AppStep.Analyzing || step === AppStep.Optimizing)) {
       interval = window.setInterval(() => {
         setProgress(prev => {
-          if (prev < 60) return prev + Math.random() * 6;
-          if (prev < 85) return prev + Math.random() * 2;
-          if (prev < 98) return prev + 0.1;
-          return 99; // Cap at 99 until response arrives
+          if (prev < 60) return prev + Math.random() * 4;
+          if (prev < 85) return prev + Math.random() * 1.5;
+          if (prev < 98) return prev + 0.05;
+          return 99; // Strict cap at 99% until model responds
         });
-      }, 400);
+      }, 500);
     } else if (!isProcessing && !isUploading) setProgress(0);
     return () => clearInterval(interval);
   }, [isProcessing, step, isUploading]);
@@ -89,7 +88,7 @@ const App: React.FC = () => {
     if (progress > 80 && progress < 99) {
       setProgressMessage("Neural Pattern Matching...");
     } else if (progress >= 99) {
-      setProgressMessage("Deep Local Inference... (Finalizing)");
+      setProgressMessage("Deep Local Inference...");
     }
   }, [progress]);
 
@@ -126,7 +125,7 @@ const App: React.FC = () => {
     if (!jobData.description || !resumeText) { setError('Ensure Job Description and Resume are provided.'); return; }
     setIsProcessing(true); setStep(AppStep.Analyzing); setError(null);
     setProgress(0);
-    setProgressMessage(`Waking ${model} node...`);
+    setProgressMessage(`Inference: ${model}...`);
     try {
       const res = await OllamaService.analyzeResume(model, resumeText, jobData.description);
       setAnalysis(res); setStep(AppStep.Result);
@@ -271,7 +270,7 @@ const App: React.FC = () => {
                   disabled={isProcessing || isUploading || !resumeText || !jobData.description} 
                   className="w-full btn-premium text-white font-black py-8 rounded-[3rem] text-2xl tracking-tighter uppercase shadow-2xl disabled:opacity-30"
                 >
-                  {isProcessing ? 'Processing...' : 'Generate Intel Report'}
+                  {isProcessing ? 'Thinking...' : 'Generate Intel Report'}
                 </button>
               </div>
             </div>
@@ -284,7 +283,7 @@ const App: React.FC = () => {
               <div className="absolute inset-0 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse"></div>
               <svg className="w-full h-full -rotate-90 relative z-10">
                 <circle cx="160" cy="160" r="150" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="20" />
-                <circle cx="160" cy="160" r="150" fill="none" stroke="url(#indigo-grad)" strokeWidth="20" strokeDasharray="942" strokeDashoffset={942 - (942 * Math.min(progress, 100)) / 100} strokeLinecap="round" className="transition-all duration-700 ease-out score-glow" />
+                <circle cx="160" cy="160" r="150" fill="none" stroke="url(#indigo-grad)" strokeWidth="20" strokeDasharray="942" strokeDashoffset={942 - (942 * Math.min(progress, 99)) / 100} strokeLinecap="round" className="transition-all duration-700 ease-out score-glow" />
                 <defs><linearGradient id="indigo-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#818cf8" /></linearGradient></defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
@@ -323,7 +322,7 @@ const App: React.FC = () => {
                     <circle cx="128" cy="128" r="120" fill="none" stroke={analysis.overallScore >= 75 ? '#10b981' : analysis.overallScore >= 50 ? '#f59e0b' : '#6366f1'} strokeWidth="18" strokeDasharray="753.6" strokeDashoffset={753.6 - (753.6 * Math.min(analysis.overallScore, 100)) / 100} strokeLinecap="round" className="transition-all duration-1000 score-glow" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-8xl font-black text-white tracking-tighter">{analysis.overallScore}</span>
+                    <span className="text-8xl font-black text-white tracking-tighter">{Math.min(100, analysis.overallScore)}</span>
                   </div>
                 </div>
               </div>
@@ -340,10 +339,10 @@ const App: React.FC = () => {
                     <div key={i} className="space-y-6">
                       <div className="flex justify-between items-end">
                         <span className="text-[11px] font-black uppercase text-slate-400 tracking-[0.3em]">{x.l}</span>
-                        <span className="text-4xl font-black text-white tracking-tighter">{x.v}%</span>
+                        <span className="text-4xl font-black text-white tracking-tighter">{Math.min(100, x.v)}%</span>
                       </div>
                       <div className="h-4 bg-slate-900 rounded-full overflow-hidden p-[3px]">
-                        <div className={`h-full bg-gradient-to-r ${x.c} rounded-full transition-all duration-1000`} style={{ width: `${x.v}%` }}></div>
+                        <div className={`h-full bg-gradient-to-r ${x.c} rounded-full transition-all duration-1000`} style={{ width: `${Math.min(100, x.v)}%` }}></div>
                       </div>
                     </div>
                   ))}
