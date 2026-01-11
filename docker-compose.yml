@@ -4,15 +4,19 @@ version: '3.8'
 services:
   ats-pro:
     build: .
+    container_name: ats-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
-      - NEXT_PUBLIC_OLLAMA_URL=http://ollama:11434
+      - NEXT_PUBLIC_OLLAMA_URL=${NEXT_PUBLIC_OLLAMA_URL}
+    restart: always
     depends_on:
-      - ollama
+      ollama:
+        condition: service_started
 
   ollama:
     image: ollama/ollama:latest
+    container_name: ollama-service
     ports:
       - "11434:11434"
     volumes:
@@ -20,13 +24,15 @@ services:
     environment:
       - OLLAMA_ORIGINS=*
       - OLLAMA_HOST=0.0.0.0
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    restart: always
+    # Uncomment the following lines if you have an NVIDIA GPU
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
 volumes:
   ollama_data:
