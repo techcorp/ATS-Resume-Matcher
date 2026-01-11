@@ -1,7 +1,12 @@
 
 import { OllamaModel } from './types';
 
-export const OLLAMA_BASE_URL = 'http://localhost:11434';
+// Check for environment variables (supports standard and Next.js style prefixes used in your Docker config)
+const ENV_URL = typeof process !== 'undefined' 
+  ? (process.env.NEXT_PUBLIC_OLLAMA_URL || process.env.OLLAMA_URL) 
+  : null;
+
+export const OLLAMA_BASE_URL = ENV_URL || 'http://localhost:11434';
 
 export const OLLAMA_MODELS: OllamaModel[] = [
   { name: 'Llama 3 (Balanced)', value: 'llama3' },
