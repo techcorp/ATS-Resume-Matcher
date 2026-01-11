@@ -1,0 +1,5 @@
+{
+  "name": "ATS Pro: AI Resume Matcher & Optimizer",
+  "description": "A high-performance AI-powered ATS system that analyzes resumes against job descriptions, provides scoring, and generates optimized content using local LLMs via Ollama.",
+  "requestFramePermissions": []
+}
