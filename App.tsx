@@ -61,7 +61,6 @@ const App: React.FC = () => {
   const [showExportConfirm, setShowExportConfirm] = useState(false);
 
   useEffect(() => {
-    console.log("ATS Pro: Main component mounted.");
     initPdfWorker();
     const timer = setTimeout(() => {
         setIsSplashComplete(true);
@@ -69,19 +68,26 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Fix: Improved cleanup for the progress interval to "stop previous"
   useEffect(() => {
-    let interval: number;
+    let interval: number | undefined;
+    
     if (isProcessing && (step === AppStep.Analyzing || step === AppStep.Optimizing)) {
       interval = window.setInterval(() => {
         setProgress(prev => {
           if (prev < 60) return prev + Math.random() * 4;
           if (prev < 85) return prev + Math.random() * 1.5;
           if (prev < 98) return prev + 0.05;
-          return 99; // Strict cap at 99% until model responds
+          return 99; // STREAK: Ensure we never hit 100 until the actual result is returned
         });
       }, 500);
-    } else if (!isProcessing && !isUploading) setProgress(0);
-    return () => clearInterval(interval);
+    } else {
+      if (!isUploading) setProgress(0);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isProcessing, step, isUploading]);
 
   useEffect(() => {
