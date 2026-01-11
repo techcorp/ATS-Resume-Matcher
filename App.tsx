@@ -74,11 +74,24 @@ const App: React.FC = () => {
     let interval: number;
     if (isProcessing && (step === AppStep.Analyzing || step === AppStep.Optimizing)) {
       interval = window.setInterval(() => {
-        setProgress(prev => (prev < 92 ? prev + Math.random() * 4 : prev + 0.1));
-      }, 600);
+        setProgress(prev => {
+          if (prev < 60) return prev + Math.random() * 6;
+          if (prev < 85) return prev + Math.random() * 2;
+          if (prev < 98) return prev + 0.1;
+          return 99; // Cap at 99 until response arrives
+        });
+      }, 400);
     } else if (!isProcessing && !isUploading) setProgress(0);
     return () => clearInterval(interval);
   }, [isProcessing, step, isUploading]);
+
+  useEffect(() => {
+    if (progress > 80 && progress < 99) {
+      setProgressMessage("Neural Pattern Matching...");
+    } else if (progress >= 99) {
+      setProgressMessage("Deep Local Inference... (Finalizing)");
+    }
+  }, [progress]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,7 +125,8 @@ const App: React.FC = () => {
   const startAnalysis = async () => {
     if (!jobData.description || !resumeText) { setError('Ensure Job Description and Resume are provided.'); return; }
     setIsProcessing(true); setStep(AppStep.Analyzing); setError(null);
-    setProgressMessage(`Inference: ${model}...`);
+    setProgress(0);
+    setProgressMessage(`Waking ${model} node...`);
     try {
       const res = await OllamaService.analyzeResume(model, resumeText, jobData.description);
       setAnalysis(res); setStep(AppStep.Result);
@@ -124,6 +138,7 @@ const App: React.FC = () => {
 
   const startOptimization = async () => {
     setIsProcessing(true); setStep(AppStep.Optimizing);
+    setProgress(0);
     setProgressMessage('Calibrating Career Benchmarks...');
     try {
       const res = await OllamaService.optimizeResume(model, resumeText, jobData.description);
@@ -256,7 +271,7 @@ const App: React.FC = () => {
                   disabled={isProcessing || isUploading || !resumeText || !jobData.description} 
                   className="w-full btn-premium text-white font-black py-8 rounded-[3rem] text-2xl tracking-tighter uppercase shadow-2xl disabled:opacity-30"
                 >
-                  {isProcessing ? 'Connecting...' : 'Generate Intel Report'}
+                  {isProcessing ? 'Processing...' : 'Generate Intel Report'}
                 </button>
               </div>
             </div>
@@ -269,14 +284,15 @@ const App: React.FC = () => {
               <div className="absolute inset-0 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse"></div>
               <svg className="w-full h-full -rotate-90 relative z-10">
                 <circle cx="160" cy="160" r="150" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="20" />
-                <circle cx="160" cy="160" r="150" fill="none" stroke="url(#indigo-grad)" strokeWidth="20" strokeDasharray="942" strokeDashoffset={942 - (942 * progress) / 100} strokeLinecap="round" className="transition-all duration-700 ease-out score-glow" />
+                <circle cx="160" cy="160" r="150" fill="none" stroke="url(#indigo-grad)" strokeWidth="20" strokeDasharray="942" strokeDashoffset={942 - (942 * Math.min(progress, 100)) / 100} strokeLinecap="round" className="transition-all duration-700 ease-out score-glow" />
                 <defs><linearGradient id="indigo-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#818cf8" /></linearGradient></defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                <span className="text-9xl font-black text-white tracking-tighter">{Math.round(progress)}%</span>
+                <span className="text-9xl font-black text-white tracking-tighter">{Math.min(99, Math.round(progress))}%</span>
               </div>
             </div>
             <h2 className="text-5xl font-black text-white mb-6 tracking-tighter uppercase">{progressMessage}</h2>
+            <p className="text-indigo-400/50 font-black text-[10px] uppercase tracking-[0.4em]">Inference can take 30-90s on CPU</p>
           </div>
         )}
 
@@ -304,7 +320,7 @@ const App: React.FC = () => {
                 <div className="relative w-64 h-64 mb-12">
                   <svg className="w-full h-full -rotate-90">
                     <circle cx="128" cy="128" r="120" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="18" />
-                    <circle cx="128" cy="128" r="120" fill="none" stroke={analysis.overallScore >= 75 ? '#10b981' : analysis.overallScore >= 50 ? '#f59e0b' : '#6366f1'} strokeWidth="18" strokeDasharray="753.6" strokeDashoffset={753.6 - (753.6 * analysis.overallScore) / 100} strokeLinecap="round" className="transition-all duration-1000 score-glow" />
+                    <circle cx="128" cy="128" r="120" fill="none" stroke={analysis.overallScore >= 75 ? '#10b981' : analysis.overallScore >= 50 ? '#f59e0b' : '#6366f1'} strokeWidth="18" strokeDasharray="753.6" strokeDashoffset={753.6 - (753.6 * Math.min(analysis.overallScore, 100)) / 100} strokeLinecap="round" className="transition-all duration-1000 score-glow" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-8xl font-black text-white tracking-tighter">{analysis.overallScore}</span>

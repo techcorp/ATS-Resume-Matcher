@@ -34,6 +34,27 @@
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .glass-input {
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-premium {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .hero-gradient-text {
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
     <script type="importmap">
 {
@@ -57,12 +78,14 @@
             if (e.target.tagName === 'SCRIPT') {
                 console.error('Failed to load script:', e.target.src);
                 const root = document.getElementById('root');
-                if (root) root.innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-weight: bold;">[CORE ERROR] Failed to load application modules. Please check your internet connection or CDN availability.</div>';
+                if (root && root.innerHTML === "") {
+                    root.innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-weight: bold; background: #030712; height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;"><div>[CORE ERROR] Failed to load application modules.</div><div style="font-size: 12px; opacity: 0.7; font-weight: normal;">Please check your connection or script path. Path: ' + e.target.src + '</div></div>';
+                }
             }
         }, true);
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script type="module" src="index.js"></script>
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
